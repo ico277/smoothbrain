@@ -13,7 +13,7 @@ int step_by_step = FALSE;
 
 int main(int argc, char **argv) {
     int c;
-    while ((c = getopt(argc, argv, "m:s::")) != -1) {
+    while ((c = getopt(argc, argv, "sm:")) != -1) {
         char *errstr;
         switch(c) {
         case 's':
@@ -21,16 +21,9 @@ int main(int argc, char **argv) {
             break;
         case 'm':
             mem_size = strtoumax(optarg, NULL, 10);
-            if (mem_size == UINTMAX_MAX && errno == ERANGE) {
-                fprintf(stderr, "Error: invalid number '%s'!", optarg);
+            if (mem_size == UINTMAX_MAX && errno == ERANGE || mem_size < 1) {
+                fprintf(stderr, "Error: invalid number '%s'!\n", optarg);
                 exit(1);
-            }
-            break;
-        case ':':
-            source_fp = fopen(optarg, "r");
-            if (source_fp == NULL) {
-                fprintf(stderr, "Error: Invalid file '%s'!", optarg);
-                exit(1);    
             }
             break;
         case '?':
@@ -40,6 +33,17 @@ int main(int argc, char **argv) {
             break;
         }
     }
-    printf("mem_size: %lu\nsource_fp: %d\nstep_by_step: %d\n", mem_size, source_fp, step_by_step);
+
+    if (optind >= argc) {
+        source_fp = stdin;
+    } else {
+        source_fp = fopen(argv[optind], "r");
+        if (source_fp == NULL) {
+            fprintf(stderr, "Error: Invalid file '%s'!\n", argv[optind]);
+            exit(1); 
+        }
+    }
+
+    printf("mem_size: %lu\nsource_fp: %lu\nstep_by_step: %d\n", mem_size, source_fp, step_by_step);
     return 0;
 }
